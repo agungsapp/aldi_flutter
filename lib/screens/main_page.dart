@@ -25,7 +25,7 @@ class MainPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Colors.red,
                 ),
               ),
               const SizedBox(height: 20),

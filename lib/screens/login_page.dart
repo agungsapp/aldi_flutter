@@ -94,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
           Text(
-            "Silakan masuk ke akun Anda",
+            "Silahkan login disini",
             style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
         ],
