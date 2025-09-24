@@ -6,24 +6,25 @@ import 'package:notifikasi/screens/login_page.dart';
 import 'package:notifikasi/screens/register_page.dart';
 import 'package:notifikasi/screens/main_page.dart';
 import 'package:notifikasi/routes/app_routes.dart';
+// import 'package:notifikasi/services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey:
-          "masukkan-apiKey-anda", // Contoh: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-      authDomain:
-          "masukkan-authDomain-anda", // Contoh: "your-project-id.firebaseapp.com"
-      projectId: "masukkan-projectId-anda", // Contoh: "your-project-id"
+          "masukkan-apiKey-anda", // Ganti dengan apiKey dari Firebase Console
+      authDomain: "masukkan-authDomain-anda", // Ganti dengan authDomain
+      projectId: "masukkan-projectId-anda", // Ganti dengan projectId
       storageBucket:
-          "masukkan-storageBucket-anda", // Contoh: "your-project-id.appspot.com"
+          "masukkan-storageBucket-anda", // Ganti dengan storageBucket
       messagingSenderId:
-          "masukkan-messagingSenderId-anda", // Contoh: "1234567890"
-      appId:
-          "masukkan-appId-anda", // Contoh: "1:1234567890:web:xxxxxxxxxxxxxxxxxxxxxxxx"
+          "masukkan-messagingSenderId-anda", // Ganti dengan messagingSenderId
+      appId: "masukkan-appId-anda", // Ganti dengan appId
     ),
   );
+  // await NotificationService.instance
+  //     .initialize(); // Inisialisasi NotificationService
   runApp(const MyApp());
 }
 
