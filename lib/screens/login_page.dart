@@ -14,22 +14,22 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController nipController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _isObscure = true;
   bool _isLoading = false;
 
   Future<void> _handleLogin() async {
     setState(() => _isLoading = true);
-    // final authService = AuthService();
-    // final success = await authService.login(
-    //   nipController.text,
-    //   passwordController.text,
-    // );
+    final authService = AuthService();
+    final success = await authService.login(
+      emailController.text,
+      passwordController.text,
+    );
 
     // hanya debug only
-    Future.delayed(const Duration(seconds: 3));
-    final success = true;
+    // Future.delayed(const Duration(seconds: 3));
+    // final success = true;
 
     setState(() => _isLoading = false);
     // print("sukses bos isinya ${success}");
@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
       showSnackBar(context, "Login berhasil!", Colors.green);
       Navigator.pushReplacementNamed(context, AppRoutes.main);
     } else {
-      showSnackBar(context, "NIP atau password salah", Colors.red);
+      showSnackBar(context, "Email atau password salah", Colors.red);
     }
   }
 
@@ -118,10 +118,13 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         children: [
           CustomTextField(
-            controller: nipController,
-            labelText: "NIP",
+            controller: emailController,
+            labelText: "Email",
             prefixIcon: Icons.person_outline,
             keyboardType: TextInputType.number,
+            textStyle: const TextStyle(
+              color: Colors.black,
+            ), // Teks akan berwarna hitam
           ),
           const SizedBox(height: 20),
           CustomTextField(
@@ -129,6 +132,7 @@ class _LoginPageState extends State<LoginPage> {
             labelText: "Password",
             prefixIcon: Icons.lock_outline,
             obscureText: _isObscure,
+            textStyle: const TextStyle(color: Colors.black),
             suffixIcon: IconButton(
               icon: Icon(
                 _isObscure ? Icons.visibility_off : Icons.visibility,

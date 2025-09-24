@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-// import 'package:notifikasi/constants/colors.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,39 +11,221 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Mock data - nanti diganti dengan API call
-  final String employeeName = "John Doe";
-  final String position = "Staff IT";
-  final double currentScore = 8.5;
-  final int weekNumber = 38;
-  final String lastEvaluationDate = "18 Sep 2024";
+  bool isLoading = true;
 
-  // Mock performance categories
-  final List<Map<String, dynamic>> performanceCategories = [
-    {'name': 'Sikap', 'score': 8.0, 'icon': Icons.sentiment_satisfied},
-    {'name': 'Disiplin', 'score': 9.0, 'icon': Icons.access_time},
-    {'name': 'Kreativitas', 'score': 8.5, 'icon': Icons.lightbulb_outline},
-    {'name': 'Komunikasi', 'score': 8.0, 'icon': Icons.chat_bubble_outline},
-  ];
+  // Data yang akan diisi dari API
+  String employeeName = "Loading...";
+  String position = "Loading...";
+  double currentScore = 0.0;
+  int weekNumber = 0;
+  String lastEvaluationDate = "";
+  List<Map<String, dynamic>> performanceCategories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      // Ambil token dari SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token tidak ditemukan. Silakan login kembali.');
+      }
+
+      final response = await http.get(
+        Uri.parse('http://localhost:8000/api/evaluasi-score'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        setState(() {
+          // Data user
+          employeeName = data['user']['name'];
+          position = _getPositionDisplay(data['user']['position']);
+
+          // Data evaluasi terbaru
+          if (data['evaluasi'].isNotEmpty) {
+            final latestEvaluation = data['evaluasi'][0];
+            currentScore = double.parse(
+              latestEvaluation['total_score'].toString(),
+            );
+
+            // Hitung minggu dari tanggal
+            DateTime weekStart = DateTime.parse(latestEvaluation['week_start']);
+            weekNumber = _getWeekNumber(weekStart);
+            lastEvaluationDate = _formatDate(weekStart);
+
+            // Transform evaluasi answers ke performance categories
+            performanceCategories = [];
+            for (var answer in latestEvaluation['evaluasi_ans']) {
+              String categoryName = _getCategoryName(
+                answer['question_snapshot'],
+              );
+              IconData icon = _getCategoryIcon(categoryName);
+
+              performanceCategories.add({
+                'name': categoryName,
+                'score': answer['score'].toDouble(),
+                'icon': icon,
+              });
+            }
+          } else {
+            // Jika belum ada evaluasi
+            currentScore = 0.0;
+            weekNumber = _getWeekNumber(DateTime.now());
+            lastEvaluationDate = _formatDate(DateTime.now());
+            performanceCategories = [
+              {
+                'name': 'Sikap',
+                'score': 0.0,
+                'icon': Icons.sentiment_satisfied,
+              },
+              {'name': 'Disiplin', 'score': 0.0, 'icon': Icons.access_time},
+              {
+                'name': 'Kreativitas',
+                'score': 0.0,
+                'icon': Icons.lightbulb_outline,
+              },
+              {
+                'name': 'Komunikasi',
+                'score': 0.0,
+                'icon': Icons.chat_bubble_outline,
+              },
+            ];
+          }
+
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        // Set default values jika error
+        employeeName = "John Doe";
+        position = "Staff IT";
+        currentScore = 8.5;
+        weekNumber = 38;
+        lastEvaluationDate = "18 Sep 2024";
+        performanceCategories = [
+          {'name': 'Sikap', 'score': 8.0, 'icon': Icons.sentiment_satisfied},
+          {'name': 'Disiplin', 'score': 9.0, 'icon': Icons.access_time},
+          {
+            'name': 'Kreativitas',
+            'score': 8.5,
+            'icon': Icons.lightbulb_outline,
+          },
+          {
+            'name': 'Komunikasi',
+            'score': 8.0,
+            'icon': Icons.chat_bubble_outline,
+          },
+        ];
+      });
+      print('Error loading data: $e');
+    }
+  }
+
+  String _getPositionDisplay(String pos) {
+    switch (pos.toLowerCase()) {
+      case 'staff':
+        return 'Staff';
+      case 'manager':
+        return 'Manager';
+      case 'supervisor':
+        return 'Supervisor';
+      default:
+        return pos;
+    }
+  }
+
+  int _getWeekNumber(DateTime date) {
+    final firstDayOfYear = DateTime(date.year, 1, 1);
+    final daysSinceFirstDay = date.difference(firstDayOfYear).inDays;
+    return ((daysSinceFirstDay + firstDayOfYear.weekday) / 7).ceil();
+  }
+
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  String _getCategoryName(String questionSnapshot) {
+    final question = questionSnapshot.toLowerCase();
+    if (question.contains('sikap')) {
+      return 'Sikap';
+    } else if (question.contains('disiplin')) {
+      return 'Disiplin';
+    } else if (question.contains('kreativitas')) {
+      return 'Kreativitas';
+    } else if (question.contains('komunikasi')) {
+      return 'Komunikasi';
+    } else {
+      return 'Lainnya';
+    }
+  }
+
+  IconData _getCategoryIcon(String categoryName) {
+    switch (categoryName.toLowerCase()) {
+      case 'sikap':
+        return Icons.sentiment_satisfied;
+      case 'disiplin':
+        return Icons.access_time;
+      case 'kreativitas':
+        return Icons.lightbulb_outline;
+      case 'komunikasi':
+        return Icons.chat_bubble_outline;
+      default:
+        return Icons.help_outline;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildCurrentScoreCard(),
-              const SizedBox(height: 20),
-              _buildPerformanceCategories(),
-            ],
-          ),
-        ),
+        child: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 24),
+                    _buildCurrentScoreCard(),
+                    const SizedBox(height: 20),
+                    _buildPerformanceCategories(),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -108,38 +292,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ],
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              onPressed: () {
-                // Navigate to notifications
-              },
-              icon: Stack(
-                children: [
-                  const Icon(
-                    Icons.notifications_outlined,
-                    color: Colors.white,
-                    size: 26,
-                  ),
-                  Positioned(
-                    right: 2,
-                    top: 2,
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ],

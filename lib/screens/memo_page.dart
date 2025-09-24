@@ -1,50 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:notifikasi/services/memo_service.dart';
 
-class MemoPage extends StatelessWidget {
+class MemoPage extends StatefulWidget {
   const MemoPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> memos = [
-      {
-        "title": "Pengumuman Rapat Bulanan",
-        "content":
-            "Rapat evaluasi bulanan akan dilaksanakan pada tanggal 25 September 2024",
-        "date": "15 Sep 2024",
-        "priority": "high",
-        "icon": Icons.meeting_room,
-      },
-      {
-        "title": "Update Sistem Absensi",
-        "content":
-            "Sistem absensi telah diperbarui dengan fitur pengenalan wajah",
-        "date": "14 Sep 2024",
-        "priority": "medium",
-        "icon": Icons.system_update,
-      },
-      {
-        "title": "Libur Nasional",
-        "content": "Tanggal 17 Agustus 2024 adalah hari libur nasional",
-        "date": "10 Sep 2024",
-        "priority": "low",
-        "icon": Icons.event_available,
-      },
-      {
-        "title": "Pelatihan Karyawan",
-        "content": "Pelatihan digital transformation untuk semua karyawan",
-        "date": "8 Sep 2024",
-        "priority": "medium",
-        "icon": Icons.school,
-      },
-      {
-        "title": "Evaluasi Kinerja Q3",
-        "content": "Periode evaluasi kinerja triwulan ketiga telah dimulai",
-        "date": "5 Sep 2024",
-        "priority": "high",
-        "icon": Icons.assessment,
-      },
-    ];
+  State<MemoPage> createState() => _MemoPageState();
+}
 
+class _MemoPageState extends State<MemoPage> {
+  final MemoService _memoService = MemoService();
+  late Future<List<dynamic>> _memosFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _memosFuture = _memoService.getMemos();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -58,7 +33,6 @@ class MemoPage extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // Header
               const Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
@@ -70,7 +44,6 @@ class MemoPage extends StatelessWidget {
                   ),
                 ),
               ),
-
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.only(top: 20),
@@ -81,12 +54,33 @@ class MemoPage extends StatelessWidget {
                       topRight: Radius.circular(32),
                     ),
                   ),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(24),
-                    itemCount: memos.length,
-                    itemBuilder: (context, index) {
-                      final memo = memos[index];
-                      return _buildMemoCard(memo, context);
+                  child: FutureBuilder<List<dynamic>>(
+                    future: _memosFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            'Terjadi kesalahan: ${snapshot.error}',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(
+                          child: Text('Tidak ada memo saat ini'),
+                        );
+                      }
+
+                      final memos = snapshot.data!;
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(24),
+                        itemCount: memos.length,
+                        itemBuilder: (context, index) {
+                          final memo = memos[index];
+                          return _buildMemoCard(memo, context);
+                        },
+                      );
                     },
                   ),
                 ),
@@ -131,70 +125,52 @@ class MemoPage extends StatelessWidget {
           onTap: () {},
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0770CD).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    memo['icon'],
-                    color: const Color(0xFF0770CD),
-                    size: 24,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        memo['title'],
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: priorityColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        memo['priority'].toString().toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: priorityColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              memo['title'],
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: priorityColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              memo['priority'].toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: priorityColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        memo['content'],
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        memo['date'],
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  memo['body'],
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  memo['sent_at'],
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                 ),
               ],
             ),

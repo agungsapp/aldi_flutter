@@ -1,10 +1,155 @@
 import 'package:flutter/material.dart';
+import 'package:notifikasi/services/auth_service.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
+  final authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final data = await authService.getUserProfile();
+    setState(() {
+      userData = data;
+      isLoading = false;
+    });
+  }
+
+  void _showEditProfileDialog() {
+    if (userData == null) return;
+
+    final nameController = TextEditingController(text: userData!['name']);
+    final emailController = TextEditingController(text: userData!['email']);
+    final positionController = TextEditingController(
+      text: userData!['position'] ?? '',
+    );
+    final passwordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Edit Profil"),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: "Nama"),
+              ),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: "Email"),
+              ),
+              TextField(
+                controller: positionController,
+                decoration: const InputDecoration(labelText: "Jabatan"),
+              ),
+              TextField(
+                controller: passwordController,
+                decoration: const InputDecoration(labelText: "Password Baru"),
+                obscureText: true,
+              ),
+              TextField(
+                controller: confirmPasswordController,
+                decoration: const InputDecoration(
+                  labelText: "Konfirmasi Password",
+                ),
+                obscureText: true,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final success = await authService.updateUserProfile({
+                'id': userData!['id'],
+                'name': nameController.text,
+                'email': emailController.text,
+                'position': positionController.text,
+                'password': passwordController.text,
+                'password_confirmation': confirmPasswordController.text,
+              });
+
+              Navigator.pop(context);
+
+              if (success) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Profil berhasil diperbarui")),
+                  );
+                }
+                _loadUserProfile();
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Gagal update profil")),
+                  );
+                }
+              }
+            },
+            child: const Text("Simpan"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Konfirmasi Logout"),
+        content: const Text("Apakah Anda yakin ingin keluar dari aplikasi?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE53E3E),
+            ),
+            onPressed: () async {
+              await authService.logout();
+              if (mounted) {
+                Navigator.pushReplacementNamed(context, '/login');
+              }
+            },
+            child: const Text("Logout"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (userData == null) {
+      return const Scaffold(body: Center(child: Text("Gagal memuat profil")));
+    }
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -19,7 +164,6 @@ class ProfilePage extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 24),
-              // Foto Profil + Nama
               CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.white,
@@ -30,22 +174,21 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                "Ahmad Fauzi",
-                style: TextStyle(
+              Text(
+                userData!['name'],
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                "Staff IT Department",
-                style: TextStyle(fontSize: 16, color: Colors.white70),
+              Text(
+                userData!['position'] ?? "-",
+                style: const TextStyle(fontSize: 16, color: Colors.white70),
               ),
               const SizedBox(height: 20),
 
-              // Konten Bawah
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(24),
@@ -60,30 +203,21 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       ListTile(
                         leading: const Icon(
-                          Icons.badge,
-                          color: Color(0xFF0770CD),
-                        ),
-                        title: const Text("NIP"),
-                        subtitle: const Text("198901234567890"),
-                      ),
-                      ListTile(
-                        leading: const Icon(
                           Icons.email,
                           color: Color(0xFF0770CD),
                         ),
                         title: const Text("Email"),
-                        subtitle: const Text("ahmad.fauzi@company.com"),
+                        subtitle: Text(userData!['email']),
                       ),
                       ListTile(
                         leading: const Icon(
-                          Icons.phone,
+                          Icons.badge,
                           color: Color(0xFF0770CD),
                         ),
-                        title: const Text("Telepon"),
-                        subtitle: const Text("+62 812-3456-7890"),
+                        title: const Text("Role"),
+                        subtitle: Text(userData!['role']),
                       ),
                       const SizedBox(height: 20),
-
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0770CD),
@@ -92,7 +226,7 @@ class ProfilePage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: _showEditProfileDialog,
                         icon: const Icon(
                           Icons.edit_outlined,
                           color: Colors.white,
@@ -111,9 +245,7 @@ class ProfilePage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        onPressed: () {
-                          _showLogoutDialog(context);
-                        },
+                        onPressed: _showLogoutDialog,
                         icon: const Icon(Icons.logout, color: Colors.white),
                         label: const Text(
                           "Logout",
@@ -127,32 +259,6 @@ class ProfilePage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Konfirmasi Logout"),
-        content: const Text("Apakah Anda yakin ingin keluar dari aplikasi?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Batal"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Arahkan ke LoginPage
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE53E3E),
-            ),
-            child: const Text("Logout"),
-          ),
-        ],
       ),
     );
   }

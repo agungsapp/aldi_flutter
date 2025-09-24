@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notifikasi/routes/app_routes.dart';
+import 'package:notifikasi/services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,6 +14,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -30,9 +32,20 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    Future.delayed(const Duration(seconds: 3), () {
+    /// Setelah animasi selesai + delay 3 detik, cek token
+    Future.delayed(const Duration(seconds: 3), _checkAuth);
+  }
+
+  Future<void> _checkAuth() async {
+    final isValid = await _authService.checkToken();
+
+    if (!mounted) return; // pastikan widget masih ada di tree
+
+    if (isValid) {
+      Navigator.pushReplacementNamed(context, AppRoutes.main);
+    } else {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
-    });
+    }
   }
 
   @override
