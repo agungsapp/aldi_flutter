@@ -21,13 +21,18 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _handleLogin() async {
     setState(() => _isLoading = true);
-    final authService = AuthService();
-    final success = await authService.login(
-      nipController.text,
-      passwordController.text,
-    );
+    // final authService = AuthService();
+    // final success = await authService.login(
+    //   nipController.text,
+    //   passwordController.text,
+    // );
+
+    // hanya debug only
+    Future.delayed(const Duration(seconds: 3));
+    final success = true;
+
     setState(() => _isLoading = false);
-    print("sukses bos isinya ${success}");
+    // print("sukses bos isinya ${success}");
     if (success) {
       showSnackBar(context, "Login berhasil!", Colors.green);
       Navigator.pushReplacementNamed(context, AppRoutes.main);
