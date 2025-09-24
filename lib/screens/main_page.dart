@@ -1,64 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:notifikasi/constants/colors.dart';
+// import 'package:notifikasi/constants/colors.dart';
+import 'package:notifikasi/screens/memo_page.dart';
+import 'package:notifikasi/screens/profile_page.dart';
+import 'package:notifikasi/screens/home_page.dart';
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = const [HomePage(), MemoPage(), ProfilePage()];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.loginGradient),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Menambahkan gambar
-              // Pastikan Anda sudah menambahkan gambar di folder 'assets'
-              // dan sudah mendeklarasikannya di pubspec.yaml
-              // Image.asset('assets/logo.png', height: 150),
-              const SizedBox(height: 30),
-              const Text(
-                "Selamat Datang di Aplikasi Notifikasi",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                "Temukan informasi penting dengan mudah",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.white70),
-              ),
-              const SizedBox(height: 40),
-              // Menambahkan tombol
-              ElevatedButton(
-                onPressed: () {
-                  // Logika untuk navigasi ke halaman lain
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.background,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 15,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text(
-                  'Mulai Sekarang',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-              ),
-            ],
-          ),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) =>
+              setState(() => _currentIndex = index),
+          backgroundColor: Colors.white,
+          indicatorColor: const Color(0xFF0770CD).withOpacity(0.1),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home, color: Color(0xFF0770CD)),
+              label: "Home",
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.mail_outline),
+              selectedIcon: Icon(Icons.mail, color: Color(0xFF0770CD)),
+              label: "Memo",
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person, color: Color(0xFF0770CD)),
+              label: "Profil",
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
+// ===== Halaman Dummy =====
