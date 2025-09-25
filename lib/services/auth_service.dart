@@ -3,22 +3,22 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://dika.sehatea.my.id/api';
+  static const String baseUrl = 'http://localhost:8000/api';
 
   Future<bool> login(String email, String password) async {
     try {
-      print("login proses dimulai");
-      print("ke base url " + baseUrl);
+      // print("login proses dimulai");
+      // print("ke base url " + baseUrl);
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
-      print("response di bawah sini ");
-      print(response);
+      // print("response di bawah sini ");
+      // print(response);
 
       if (response.statusCode == 200) {
-        print("login berjalan dengan benar");
+        // print("login berjalan dengan benar");
         final data = jsonDecode(response.body);
         final token = data['data']['token'];
         final prefs = await SharedPreferences.getInstance();
