@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MemoService {
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'http://dika.sehatea.my.id/api';
 
   Future<List<dynamic>> getMemos() async {
     final prefs = await SharedPreferences.getInstance();

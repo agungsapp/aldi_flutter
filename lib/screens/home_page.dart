@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
       }
 
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/evaluasi-score'),
+        Uri.parse('http://dika.sehatea.my.id/api/evaluasi-score'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
