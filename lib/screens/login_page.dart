@@ -88,7 +88,12 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: Column(
         children: [
-          const Icon(Icons.badge_outlined, size: 60, color: AppColors.primary),
+          Image.asset(
+            'assets/logo.png',
+            width: 200, // atur ukuran sesuai kebutuhan
+            // height: 100,
+            fit: BoxFit.contain,
+          ),
           const SizedBox(height: 16),
           const Text(
             "Selamat Datang",
@@ -121,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
             controller: emailController,
             labelText: "Email",
             prefixIcon: Icons.person_outline,
-            keyboardType: TextInputType.number,
+            keyboardType: TextInputType.emailAddress,
             textStyle: const TextStyle(
               color: Colors.black,
             ), // Teks akan berwarna hitam

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notifikasi/services/memo_service.dart';
+import 'package:notifikasi/global_callbacks.dart';
 
 class MemoPage extends StatefulWidget {
   const MemoPage({super.key});
@@ -15,7 +16,28 @@ class _MemoPageState extends State<MemoPage> {
   @override
   void initState() {
     super.initState();
-    _memosFuture = _memoService.getMemos();
+    _fetchMemos();
+
+    // 🔑 Register callback supaya bisa dipanggil dari main.dart
+    GlobalCallbacks.onNewMemo = () {
+      debugPrint("🔄 Refresh MemoPage karena ada notifikasi masuk");
+      _fetchMemos();
+    };
+  }
+
+  void _fetchMemos() {
+    setState(() {
+      _memosFuture = _memoService.getMemos();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Unregister supaya tidak memory leak
+    if (GlobalCallbacks.onNewMemo == _fetchMemos) {
+      GlobalCallbacks.onNewMemo = null;
+    }
+    super.dispose();
   }
 
   @override

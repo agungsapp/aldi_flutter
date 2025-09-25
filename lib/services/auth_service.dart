@@ -7,13 +7,18 @@ class AuthService {
 
   Future<bool> login(String email, String password) async {
     try {
+      // print("login proses dimulai");
+      // print("ke base url " + baseUrl);
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
+      // print("response di bawah sini ");
+      // print(response);
 
       if (response.statusCode == 200) {
+        // print("login berjalan dengan benar");
         final data = jsonDecode(response.body);
         final token = data['data']['token'];
         final prefs = await SharedPreferences.getInstance();
