@@ -8,6 +8,7 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final Widget? suffixIcon;
   final TextInputType? keyboardType;
+  final TextStyle? textStyle; // Tambahkan properti ini
 
   const CustomTextField({
     super.key,
@@ -17,6 +18,7 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.suffixIcon,
     this.keyboardType,
+    this.textStyle, // Tambahkan di sini
   });
 
   @override
@@ -31,6 +33,7 @@ class CustomTextField extends StatelessWidget {
         controller: controller,
         obscureText: obscureText,
         keyboardType: keyboardType,
+        style: textStyle, // Gunakan properti yang baru ditambahkan
         decoration: InputDecoration(
           labelText: labelText,
           prefixIcon: Icon(prefixIcon, color: AppColors.primary),
