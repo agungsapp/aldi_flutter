@@ -2,7 +2,7 @@
     <application
         android:label="notifikasi"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
 
         <!-- Tambahkan meta-data untuk channel notifikasi -->
         <meta-data

@@ -85,15 +85,16 @@ class _SplashScreenState extends State<SplashScreen>
                             color: Colors.white.withOpacity(0.3),
                           ),
                         ),
-                        child: const Icon(
-                          Icons.badge_outlined,
-                          size: 80,
-                          color: Colors.white,
+                        child: Image.asset(
+                          'assets/logo-kotak.png',
+                          width: 200, // atur ukuran sesuai kebutuhan
+                          // height: 100,
+                          fit: BoxFit.contain,
                         ),
                       ),
                       const SizedBox(height: 32),
                       const Text(
-                        "Wahaha Seafood",
+                        "Evaluation",
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
