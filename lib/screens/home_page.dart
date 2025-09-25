@@ -80,28 +80,9 @@ class _HomePageState extends State<HomePage> {
               });
             }
           } else {
-            // Jika belum ada evaluasi
-            currentScore = 0.0;
-            weekNumber = _getWeekNumber(DateTime.now());
-            lastEvaluationDate = _formatDate(DateTime.now());
-            performanceCategories = [
-              {
-                'name': 'Sikap',
-                'score': 0.0,
-                'icon': Icons.sentiment_satisfied,
-              },
-              {'name': 'Disiplin', 'score': 0.0, 'icon': Icons.access_time},
-              {
-                'name': 'Kreativitas',
-                'score': 0.0,
-                'icon': Icons.lightbulb_outline,
-              },
-              {
-                'name': 'Komunikasi',
-                'score': 0.0,
-                'icon': Icons.chat_bubble_outline,
-              },
-            ];
+            // Jika belum ada evaluasi → tampilkan empty state
+            currentScore = -1; // pakai -1 supaya gampang cek di UI
+            performanceCategories = [];
           }
 
           isLoading = false;
@@ -212,6 +193,32 @@ class _HomePageState extends State<HomePage> {
         child: isLoading
             ? const Center(
                 child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+              )
+            : currentScore == -1
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 80,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "Belum ada evaluasi untuk Anda",
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Color(0xFF6B7280),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
               )
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
